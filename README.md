@@ -1,16 +1,5 @@
-# Internet-Draft Template Repository
 
-Use this repository as a template if you want to start working on
-[IETF](https://www.ietf.org/) documents.
-
-[Read the
-instructions](https://github.com/martinthomson/i-d-template/blob/main/doc/TEMPLATE.md)
-for more information.
-
-Once you have created your own repository, start work by renaming the
-`draft-todo-yourname-protocol.md` file
-[here](../../edit/main/draft-todo-yourname-protocol.md).
-# Industrial IoT Framework
+# Industrial IoT Framework (Individual Contribution)
 
 This is the topic of interest to IOTOPS for the IETF [ADD Working Group](https://datatracker.ietf.org/wg/add/documents/) Internet-Draft, "Industry IoT Framework".
 
@@ -31,4 +20,8 @@ This requires that you have the necessary software installed.  See
 ## Contributing
 
 See the
-[guidelines for contributions](https://github.com/ietf-wg-add/draft-ietf-add-ddr/blob/main/Contributing.md).
+[guidelines for contributions](https://kiranmak.github.io/draft-iotops-iiot-frwk//blob/main/Contributing.md).
+
+#  Internet-Draft Template Repository
+[Read the instructions](https://github.com/martinthomson/i-d-template/blob/main/doc/TEMPLATE.md)
+for more information.
