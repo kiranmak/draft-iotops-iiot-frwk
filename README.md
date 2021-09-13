@@ -1,7 +1,7 @@
 
 # Industrial IoT Framework (Individual Contribution)
 
-This is the topic of interest to IOTOPS for the IETF [ADD Working Group](https://datatracker.ietf.org/wg/add/documents/) Internet-Draft, "Industry IoT Framework".
+This is the topic of interest to [IOTOPS-WG](https://datatracker.ietf.org/wg/add/documents/) Internet-Draft, "Industry IoT Framework".
 
 * [Editor's Copy](https://kiranmak.github.io/draft-iotops-iiot-frwk/draft-iotops-km-iiot-frwk.html)
 
