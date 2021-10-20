@@ -48,11 +48,11 @@ informative:
     target: https://github.com/iot-dir/Meetings/blob/main/20211012/slides/Diab_IIC_Overview_for_IETF_1021_rev2.pdf
     date: 2021-10-12
 
-​--- abstract
+--- abstract
 
 Industry control networks host a diverse set of non-internet protocols supporting Industrial-IoT and legacy device connections. The integration between traditional information technology (IT) and operational technology (OT) so far has centered around collection of real-time data from devices in OT environment for consumption within the enterprise IT networks. However, improvements in process control and automation require a far better interworking between the OT and IT applications. This document provides an overview of a reference framework for integrated industry networks. It specifically focuses on identifying the differences between the IT and OT networks and suggests the use of IETF technologies to bridge those differences.
 
-​--- middle
+--- middle
 
 # Introduction {#intro}
 
@@ -127,7 +127,7 @@ On the other side inventory management, analytics, monitoring, supply chain and 
 ### IETF Technologies
 
 ### Challenges
-#The scope of this document should be connectivity related convergence of IT and OT. 
+#The scope of this document should be connectivity related convergence of IT and OT.
 
 Therefore, the interfaces between business layer and process control layer are captured in detail as they are more interesting (or relevant) for inter-operation discussions. The document specifcally focuses on the new emerging trends that could potentially impose new connectivity requirements. Key emerging trends discussed are: (a) device to cloud mechanisms, (b) virtualization, (c) high-volume data emission, (d) location awareness, and (e) industry device security enhancements.
 
