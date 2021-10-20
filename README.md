@@ -1,11 +1,23 @@
+# Framework For Industrial Networks
 
-# Industrial IoT Framework (Individual Contribution)
+This is the working area for the individual Internet-Draft, "Framework For Industrial Networks".
 
-This is the topic of interest to [IOTOPS-WG](https://datatracker.ietf.org/wg/add/documents/) Internet-Draft, "Industry IoT Framework".
+* [Editor's Copy](https://kiranmak.github.io/draft-iotops-iiot-frwk/#go.draft-iotops-km-iiot-frwk.html)
+* [Datatracker Page](https://datatracker.ietf.org/doc/draft-iotops-km-iiot-frwk)
+* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-iotops-km-iiot-frwk)
+* [Compare Editor's Copy to Individual Draft](https://kiranmak.github.io/draft-iotops-iiot-frwk/#go.draft-iotops-km-iiot-frwk.diff)
 
-* [Editor's Copy](https://kiranmak.github.io/draft-iotops-iiot-frwk/draft-iotops-km-iiot-frwk.html)
 
-## Building the Draft
+## Contributing
+
+See the
+[guidelines for contributions](https://github.com/kiranmak/draft-iotops-iiot-frwk/blob/main/CONTRIBUTING.md).
+
+Contributions can be made by creating pull requests.
+The GitHub interface supports creating pull requests using the Edit (✏) button.
+
+
+## Command Line Usage
 
 Formatted text and HTML versions of the draft can be built using `make`.
 
@@ -13,15 +25,6 @@ Formatted text and HTML versions of the draft can be built using `make`.
 $ make
 ```
 
-This requires that you have the necessary software installed.  See
-[the instructions](https://github.com/martinthomson/i-d-template/blob/master/doc/SETUP.md).
+Command line usage requires that you have the necessary software installed.  See
+[the instructions](https://github.com/martinthomson/i-d-template/blob/main/doc/SETUP.md).
 
-
-## Contributing
-
-See the
-[guidelines for contributions](https://kiranmak.github.io/draft-iotops-iiot-frwk//blob/main/Contributing.md).
-
-#  Internet-Draft Template Repository
-[Read the instructions](https://github.com/martinthomson/i-d-template/blob/main/doc/TEMPLATE.md)
-for more information.
