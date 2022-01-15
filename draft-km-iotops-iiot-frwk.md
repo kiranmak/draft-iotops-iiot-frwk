@@ -214,7 +214,7 @@ When a new set of devices (sensors, controllers, etc.) are to be added, a genera
 ##  Protocol Diversity
 The devices on factory floors (e.g. fieldbus devices) are controlled by PLCs often communication over a one or more  non-internet protocols such as Modbus, Profibus, CANbus, Profinet, etc {{SURV}}. There are more than 100 different protocols each with it's own packet format and are used  in the industry. When there is need to inter-connect two or more cells, corresponding translation of protocols need to be done from source and destination end points (device to controllers). Since the number of devices supported per fieldbus controller are limited (ranging from 32 to 256), the number of PLCs continue to grow as new sensor/actuators are deployed. Moreover, additional deployments are not integrated with existing network and a new network is created.
 
-## Communication between Enterprise and Factory 
+## Communication between Enterprise and Factory
 
 There is another aspect of protocol conversion which is indirect. Instead of end-to-end connection, factory floor PDUs are transmitted as transport encapsulations in IP. This necessitates the need for firewalls to look beyond the IP header. Thus the overall manageability of networks is also complex, it is far more difficult to change device configuration than changing the traffic flowing through those devices.
 
@@ -233,7 +233,7 @@ The following sections describe the foundational concepts of converged industry 
 
 ## Component Virtualization
 
-In the existing deployments, components such as HMI, Historian, MES, SCADA systems used to run on dedicated hardware. By virtualizing these systems, they can be consolidated on a single general-purpose hardware platform, which reduces the number of hardware devices and improves security of data exchanges among these systems. 
+In the existing deployments, components such as HMI, Historian, MES, SCADA systems used to run on dedicated hardware. By virtualizing these systems, they can be consolidated on a single general-purpose hardware platform, which reduces the number of hardware devices and improves security of data exchanges among these systems.
 
 Virtual PLC is a concept in which control part of factory devices is decoupled from the I/O component. With vPLCs, the I/O stays local to the machines, sensors, actuators and drives and the controller logic is a software service implemented over RT-hypervisors. By virtualizing PLC, other components can directly interface with process control to make modifications and send commands. With the support of a deterministic network fabric, now all the software components are part of the execution environment on one side of the fabric completely capable of leveraging mature IP based technologies.
 
@@ -241,7 +241,7 @@ Although, an exploratory work {{VPLC_CONV}} and {{VPLC_IIC}} propose I/O field-b
 
 ### Edge Compute and Processing
 
-Component virtualization enables co-location of different service functions on the same hypervisor or entirely at a different location regardless of what security zone they belong to. The constraints aware path chain can be set using {{!RFC7665}}. Moreover, it provides multiple service function chain to support different applications. This type of architecture along with NFV {{ETSI_GS_NFV_003}} can be extremely resource efficient. 
+Component virtualization enables co-location of different service functions on the same hypervisor or entirely at a different location regardless of what security zone they belong to. The constraints aware path chain can be set using {{!RFC7665}}. Moreover, it provides multiple service function chain to support different applications. This type of architecture along with NFV {{ETSI_GS_NFV_003}} can be extremely resource efficient.
 
 Several sensors emit time-series style data, that can add to the bandwidth consumption to the information going to the cloud. Deploying big-date application closer on the edge and scale them on-demand provides a sophisticated tool to disaggregate  processing of sensory data and summarize for the cloud-enterprise applications.
 
@@ -300,13 +300,13 @@ CIIR: Industry-Intermediate-Router, CIBR:- Border-Router
 
 A manufacturing facility can be located at more than one site and each site is further divided into cells. Further the machinery, actuators, sensors are associated with the cell connected to the PLCs. These controllers run different protocols such as Ethernet, RT-Ethernet, Modbus, ProfiNet etc.
 
-In a vPLC supported environment, the I/O cards are responsible for media access conversion from in and out of the converged fabric. Even the support for legacy PLCs is similar to vPLCs, with the role reduced to only translation function.  
+In a vPLC supported environment, the I/O cards are responsible for media access conversion from in and out of the converged fabric. Even the support for legacy PLCs is similar to vPLCs, with the role reduced to only translation function.
 
-## Converged Fabric 
+## Converged Fabric
 
 Converged fabric shown as "B." in {{convarch}} is central to the architecture. The connectivity is largely Ethernet based (except I/O device interfaces), potentially running IP protocols on the switches and routers in the network.
 
-Since this is a logical fabric, the connectivity is local on a factory floor and can be extended to multiple sites. Interconnecting different different sites will use WAN  functions. The fabric breaks the hierarchical structure and topology can now be designed as fat-tree (or leaf-spine) network which provides overall more number and multiple deterministic paths between two end points. 
+Since this is a logical fabric, the connectivity is local on a factory floor and can be extended to multiple sites. Interconnecting different different sites will use WAN  functions. The fabric breaks the hierarchical structure and topology can now be designed as fat-tree (or leaf-spine) network which provides overall more number and multiple deterministic paths between two end points.
 
 A key characteristic of legacy Industry networks is that they do not require frequent changes and therefore, topology changes are not dynamic. The fabric could potentially use a combination of software-defined connectivity with IP routing protocols. The routing protocols will maintain the infrastructure reachability among the network nodes and software-defined solutions will manage flow of traffic in a deterministic manner addressing the low-latency and deterministic data delivery of certain type of flows.
 
@@ -329,7 +329,7 @@ To develop further on different type of address format support. From smaller add
 : Support for protocol formats and their core capabilities.
 :
 : Support for traffic profiles for different types of services
-: 
+:
 : Support for security and separation as designed in OT systems.
 
 ## Requirements from Emerging Trends
