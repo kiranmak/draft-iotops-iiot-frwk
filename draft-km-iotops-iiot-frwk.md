@@ -1,7 +1,7 @@
 ---
-abbrev: iiot-framework
+abbrev: iiot-vplc
 docname: draft-km-iotops-iiot-frwk-latest
-title: Framework For Integrated Industrial Networks
+title: Virtualization of PLC in Industrial Networks - Problem Statement
 date:  false
 category: info
 
@@ -38,6 +38,11 @@ informative:
     title: "ANSI/ISA-95.00.01-2010 (IEC 62264-1 Mod) Enterprise-Control System Integration - Part 1: Models and Terminology"
     target: https://www.isa.org/standards-and-publications/isa-standards/isa-standards-committees/isa95
 
+  semantic-addressing:
+    I-D.draft-jia-intarea-internet-addressing-gap-analysis
+  asymmetric-addr:
+    I-D.draft-km-industrial-internet-requirements
+
   IIC_TALK:
     title: "Overview of IIC – Building the IIoT Ecosystem"
     author:
@@ -61,6 +66,22 @@ informative:
 
   VPLC_CONV: DOI.10.1109/LES.2016.2608418
 
+  FPGA_PLC: DOI.10.11591/telkomnika.v11i12.3701
+
+  PLC-40:  DOI.10.1109/IECON.2019.8927026
+
+  VPLC-DRAGOS:
+    title: Programmable Logic Controller Virtualization
+    author:
+     -
+      name: Austin Scott
+    date: 2019-02-08
+    target: https://www.dragos.com/blog/industry-news/programmable-logic-controller-virtualization/
+
+  networked-PLC:
+    title: Should PLCs be networked?
+    date: 2004-10-04
+    target: https://www.plantengineering.com/articles/should-plcs-be-networked
   VPLC_IIC:
    title: Virtualized Programmable Logic Controllers. An Industrial Internet Consortium Tech Brief
    target: https://www.iiconsortium.org/pdf/IIC-Edge-vPLC-Tech-Brief-20210907.pdf
@@ -85,10 +106,7 @@ informative:
    target: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html
    date: 2015-12
 
-  ETSI_GS_NFV_003:
-   title: "Network Functions Virtualization (NFV) Architectural Framework"
-   date: 2017
-
+  RECONF: DOI.10.1007/978-3-662-53120-4_6629
 --- abstract
 
 Industry control networks host a diverse set of non-internet protocols supporting Industrial-IoT and legacy device connections. These networks are physically separated from the enterprise networks and have been slow to adopt the virtualization technologies. Virtualization is necessary to remove the boundaries between the enterprise and process control networks. This document specifies a framework for the converged industrial network. Specifically, it focuses on the virtual PLC scenario. It covers transition technologies required for the convergence of industrial devices with the enterprise application endpoints.
@@ -97,39 +115,14 @@ Industry control networks host a diverse set of non-internet protocols supportin
 
 # Introduction {#intro}
 
-There is a little cross-over between the network technologies used in the Operational Technology (OT) and Information Technology (IT) environments as the architecture of industrial networks has evolved independently from the IT networks.
-While industrial networks focussed on deterministic communication, safety, and reliability of process control, they have trailed behind in the adoption of virtualization capabilities. Virtualization is necessary for the industry automation to enable compute and data-intensive services at scale. Moreover, it is also a necessary tool for the convergence of OT and IT systems.
+Programmable Logic Controllers (PLCs) have been instrumental to the growth of automation in industrial process control. Industry 4.0 and similar initiatives have put even more emphasis on automation of the entire production process. For example, a typical workflow in the Smart Factory to manufacture customized orders (reconfigurable manufacturing {{RECONF}}) is executed autonomously, comprising several related and inter-dependent processes. In this workflow, all the dependencies and transitions occur seamlessly without human intervention - such as requesting inventory before it becomes unavailable, dispatching a request for specific maintenance, performing quality control on the material, and adjusting operations automatically.
 
-Although the virtualization of SCADA and other systems (HMI, MES, Historian, etc.) has happened, the low-level PLCs have remained on the factory floor. Virtualization of PLC is a  topic of great interest for fully automated and remote operations in the manufacturing and similar process control industry because it allows direct control of low-level processes from the applications.
+This type of system level automation requires a very close coordination between PLCs (low-level machine controlling components) on the factory floors and the high-level decision making software. However, in the current Industry control architecture, PLCs operations are not only isolated from higher-level components, they operate in an entirely different proprietary hardware environment.
 
+Virtualization is a proven technique to abstract software logic from the underlying hardware. Information Technologies (IT) have proven that virtualization benefits cost savings, flexibility and efficient resource usage. In the context of Industrial networks, virtualization  serves to integrate IT and OT software components, essential for integrated automation.
 
-This memo studies the overall network requirements for support of  virtualized PLCs and identifies their characteristics. The benefits include:
+This document describes 'virtualized PLC' concept and how they will be realized. In {{problem}} limitations in physical PLCs are covered along with the benefits of virtualized PLC. Finally, {{req}} discusses requirements to support virtualized PLCs and their impact on the network.
 
-- Flexibility to control the devices from application-level logic thus improving automation,
-- Potentially eliminate need for dedicated PLCs on the floor that reduces interconnection and integration overheads.
-- Ability to leverage high-end general purpose processing platforms to perform complex compute intensive operations.
-- Adapt rapidly to changing business requirements with software, avoiding hardware changes.
-
-Enabling PLC virtualization imposes a set of challenging requirements. Broadly they can be viewed from
-
-1. PLC perspective: the mechanisms with which it integrates with other business applications while preserving PLC logic, and its real-time or deterministic constraints when communicating with   the devices it interacts with;
-
-2. Network perspective: the impact on the network when PLCs are not directly connected to devices i.e., requirements to reliably move data between the  virtualized PLC elements and OT devices (sensors, and actuators) while maintaining operational safely.
-
-This document presents the baseline industrial architecture in {{baseline}} and  demonstrates that the current hierarchical architecture poses difficulty for the adoption of PLC virtualization in industrial networks {{limitations}}. {{evo-networks}} further develops approaches to the support for virtualized PLCs.
-
-A distributed conceptual model that could potentially address the above limitations is presented for discussion as a converged industrial-network architecture {{converged}}. Finally, a summary of requirements is extracted in {{reqs}}.
-
-{::comment}
-The architectural components in this document are concerned with the
-identification of requirements to be met when introducing virtualized PLC,
-and in doing so, arrive at a converged industrial network architecture which supports emerging trends better.
-
-In comparison to the current IP architectures, industrial networks
-are required to support the coexistence of several industrial protocols, and the converged architecture must support existing mechanisms.
-{:/comment}
-
-This document discusses those requirements and proposes a path to converged industrial networking.
 
 # Terminology
 
@@ -144,10 +137,10 @@ Industry Automation:
  automatic control and operation of industrial devices and  processes leading to minimizing human intervention.
 
 Control Loop:
-: Todo
+: Control loops are part of process control systems in with desired process response is provided as an input to the controller which  performs corresponding action (using actuators) and reads the output values. Since there is no error correction performed, these are called open control loops.
 
 Feedback Control Loop:
-: Todo
+: Feedback control loop is a system in which the output of a control system is continuously measured and compared to the input reference value. Any deviation  from the input value is used by the controller to adjust output value for desired response. Since there is a feedback of error signal to the input, these are called closed control loops.
 
 Programmable logic controllers (PLC):
  : Industrial computers/servers for the control of manufacturing processes such as assembly lines.
@@ -166,12 +159,16 @@ Fieldbus Devices:
 
 Integrated Industrial Network (IIN):
   : The term introduced in this document to represent a converged view of OT and IT networks.
+
 Virtualized PLC (vPLC):
   : A software component of PLC, in which the control part of factory devices
    is decoupled from the I/O component.  With vPLCs, the I/O stays local
    to the machines (sensors, actuators, and drives), while the
    controller logic lives as a software service implemented over RT-
    hypervisors.
+
+Scan-Cycle:
+ : A scan cycle is the time taken to read the inputs, execute the program (e.g. ladder logic), and update the outputs.  The actual scan time is affected by the processing speed of the PLC, the size of the program, the type of instructions used in the program. In virtualized PLCs general-purpose processor speed and the amount of memory available is much higher than most physical PLCs.
 
 ## Acronyms
 * HMI: Human Machine Interface
@@ -187,45 +184,148 @@ Virtualized PLC (vPLC):
 * IT: Information Technology
 
 
-# Industrial Network Architecture {#baseline}
+# Virtualized PLCs
 
-{::comment}
-This section discusses the baseline architecture and corresponding design choices made for inter-operation between the enterprise applications and factory floors.
-{:/comment}
+## Definition
 
-The physical network architecture for process control and operations centric networks  as shown in {{indusarch}} is rigidly hierarchical.  Note that the figure is over-simplified and in general, each level will have additional hierarchies to extend networks for scale. For example, a PLC that is controlling a group of fieldbus devices may be controlled by another PLC controller which  runs ProfiNet protocol. In such cases protocol translation gateways are needed. Between these gateways there may exist a set of  intermediate network switches to extend the range (physical distance) and scale (number of devices) of connectivity on the factory floor. Similarly, system integrators also need a variety of translation gateways to extract and integrate data from field devices as an input to MIS, HMI and other enterprise applications.
+Programmable Logic Controllers (PLCs) are specialized physical devices (or computers) that are used to control the operation of machines by coordinating the input sensors (temperature, pressure, position, vibration, humidity, torque, etc. readings) to the output actuators (such as motion control, voltage change, pressure valves, etc). PLC components include of Control unit, memory (to store the data, state and process control instructions) and I/O modules to communicate with fieldbus devices (sensors and actuators) using different standard or proprietary protocols.
 
-The hierarchical architecture comprises of security oriented zones that are combined together to represent ICA-95 model  (or Purdue model see {{Appendix}}) in which each zone further contains well-defined levels. The communication across the zone tends to get complex as each zone runs over a different technology. Among the three zones (Manufacturing, IDMZ and Enterprise), the enterprise zone network is all IP while manufacturing and IDMZ network on factory floor are a  combination of IP and Industrial protocols. IP-based routers are used in manufacturing-zone when there is need to extend the network across different cells on factory floors. There are a large number of IP based firewalls and  gateways that perform translation in IDMZ but are required to look at transport payload to determine the industrial protocols and corresponding matching rules.
+When compared with commodity CPUS, most PLC control unit processing power is extremely low, whereas new complex process control applications require  sophisticated and faster compute capabilities.  Utilizing  commodity grade CPUs for many of the PLC function blocks is one option for to provide higher compute and memory for PLC programs  by separating its control unit and memory from the physical PLCs. This will leaves only I/O modules connected to the devices. Thus,
 
-Higher layer applications directly interact with PLCs for send and receive commands and data from the field devices. The data generated by sensors is transmitted by PLCs to industry control systems (SCADA, HMI, MES).
-Both DCS and SCADA systems collect data from process instruments and respond with  commands to the actuators. They control several process control loop instances simultaneously to handle complex processes. Originally, such systems were built using proprietary hardware and software, operating in its own zone without additional connectivity. Operators had to work from centralized control room because these systems did not support remote access. The best practices for data delivery to other systems was in the form of reports, which caused significant time lag.
+ >> Virtualized PLC is a hardware-agnostic abstraction of the control unit and memory functions of a PLC. It is hardware-independent and still needs an interface to communicate with the I/O modules.
+
+The concept has been discussed both in research {{PLC-40}} and industry {{VPLC-DRAGOS}} {{VPLC_IIC}} {{VPLC_CONV}}. In the following section motivation for virtualized-PLCs.
+
+## Limitations with Physical PLCs
+
+### Integrated Application Control Loop
+Application performance can be improved with better coordination between applications and field devices. One way to achieve this is when seamless sharing of both data and control operations and it is possible when both application and controller software use common language or interface. Today OPC-UA model is well-established and provides protocol independent data model for standard representation of several fieldbus protocols and requires a translation layer.
+With software PLCs, not only the collection of data but even control can be unified even more easily since the software PLCs are already hardware independent.
+
+Similar to IT, manufacturing and process industry is evolving to non-monolithic mode of system operations. In a large scale industry, several control processes are running and having a high performance requirements.
+
+### Single purpose to Multi purpose
+Currently, PLC controllers are designed for a single purpose long-term use. There is an implicit expectation that once installed, PLC functions and corresponding I/O devices will not be replaced for many years. This paradigm makes it difficult for industries to adopt changing requirements and can be prohibitive to adoption of new technologies and deployment of new types of sensors that could provide better monitoring. With virtualized PLC re-programming control logic becomes lot easier.
+
+### Simulation and Analytics
+Physical PLCs are difficult to troubleshoot. Upon failures, operators have to manually study the log files to generate traces from historical data. Since Virtual PLCs are hardware-agnostic, they are almost identical to their simulation counter parts. When replay with real historical event data, run-time state of a PLC at any instance in past can be recreated which would help to troubleshoot and root-cause failure events. It is  difficult to do this type of root-cause analysis with physical PLCs.
+
+### Managing Complexity
+
+Complexity is a trait of an overall system architecture. With Physical PLCS, the plant-floors will continue to deploy proprietary protocols and PLCs leading to either having to manage solutions from different vendors or locked into one vendor provided solutions. While former adds to complexity, latter may not get to use innovative outside a specific vendor.
+
+Architecturally, PLCs require a lot of different types of connections such as PLC-PLC (peer to peer), PLC-SCADA, PLC-HMI etc. Depending on the interface and protocol, scaling PLCs would lead to a higher number of gateways (and more wiring) the are difficult from maintenance perspective and can also be cause of poor performance. With physical PLCs, heterogeneity of protocol interface will not go away.
+
+Faults with PLC input/output (I/O) modules and field devices account for 80 per cent of system failures. Common causes of failure include rugged environment that devices are subjected to. In some cases, consolidating different PLCs on a single powerful PC and protecting that one PC from failures of power outage, electromagnetic or radio frequency interference is lot easier than protecting a high number of PLCs. In other cases, PLCs can be placed in the edge network, separated from the rugged environment.
+
+## Benefits and Opportunities
+
+### Processing Capabilities
+Virtualization enables running software on commodity hardware. One of the most important benefit is the ability to use more sophisticated processors to perform complex computations beyond whats available on legacy PLCs (floating point, arithmetic operations, counters, etc). Currently, there are already PLC control units supported on FPGAs {{FPGA_PLC}} indicating the need for faster and parallel processing. virtualization will enable further integration of such  different With the availability of high-en.
+
+### Flexibility and Efficient Resource Use
+
+Traditional PLCs are fixed-function controllers that are typically used for specific job on the factory floor. Now there is more emphasis on customizations which will require PLCs to be programmed every time a new custom product is requested. This could lead to longer manufacturing cycles. Today, software-based PLCs are available for general-purpose commercial hardware but they have been mainly used for simulation and training purposes. Virtualization can enable running multiple instances of with its own set of allocated resources. Thus, it will be possible to run different configurations for different customizations simultaneously with efficient use of resources only on-demand.
+
+Moreover, when virtualized PLCs and IT applications are on same platform, it is possible to have close coordination between the OT and IT functions. Although it may not be a compelling, virtualized PLCs potentially eliminate need for dedicated PLCs on the floor, creating space and reducing number of interconnections.
+
+### Interoperability and Optimization
+
+Having abstracted PLC logic provides an option to use a common communication protocol thus improving interoperability between different vendors supplied I/O modules. Besides improving performance, this approach also simplifies configuration, configuration and monitoring.
+
+### Device Density on Factory Floor
+With the innovations in IoT devices, it is anticipated that there will newer ways to measure, monitor and collect various environment specific metrics. Which simply means a large number of devices and corresponding increase in the number of controllers. Virtualization can further simplify control of a high number of devices through a single PLC thereby reducing network resource consumption.
+
+While applications and services are beginning to get disaggregated, PLCs' virtualization is very early stage.
+
+## Incremental Realization Approaches
+Once virtualized,  a PLC may be placed flexible anywhere in the network and closer to the higher-level applications. However, expanding beyond a factory cite, is a drastic change from the existing isolated OT mindset. To address such concerns, the following different approaches are possible:
+
+### Softwarized PLC
+This is the basic approach with minimal change and minimal impact. A PLC software is virtualized and either runs on proprietary or commodity hardware supporting legacy I/O modules. This type of change is isolated to a specific PLC functionality and the only benefit is hardware independence. Potentially, there is a one to one replacement of physical to software PLC.
+
+### Local Disaggregation of Control and I/O Modules {#localized}
+Extending the above approach PLC control unit is developed as a software running on a commodity hardware as above; In addition, I/O modules are separated from the PLC to provide a clear separation between I/O and programmable components. It requires  trivial I/0 interconnects to do trivial fieldbus frame forwarding to I/O modules which may not require any memory or processing capability as shown in {{localized-plc}}.
+
+~~~~~ drawing
+                    .-,,-.                     fieldbus
+      +-+        .-( cite )-.     IP   _______   i/f
+      | |  ---->(  network   )------->[_______] ------> |==|
+      +-+        '-(      ).-'          I/O          I/O device
+   virtualized      '-.-'           inter-connects
+     PLC
+~~~~~
+{: #localized-plc title="virtualization of PLC and separation from  I/O devices"}
+
+Utilizing IT virtualization infrastructure, different instances of virtualized PLC may run simultaneously on a single machine or even a group of PLCs may be bundled together in a single instance of virtualized PLC. With this level of hardware independence, a virtualized PLC can be instantiated on the same hardware along with SCADA, HMI, or ICS components providing close integration of these entities. A clean separation between PLC logic from I/O module allows changes to PLC logic and I/O devices independently.
+
+Since the location of virtualized PLC is with in manufacturing zone there is no impact on the security design.
+
+### Fully Virtualized PLC
+Eventually virtualized PLCs may be placed  anywhere (in cloud, edge or on site) in a location independent manner. All the benefits considered in {{localized}} apply with an advantage of leveraging multi-tenant edge-compute infrastructure as a tenant.
+
+However, security zones are impacted will require network to provide more secure and safety mechanisms.
+
+# Problem Statement {#problem}
+
+ The addition of new PLC virtualization capabilities impacts not only the PLC device but also the network elements in the infrastructure. Design considerations must be made to ensure that such impacts facilitate automation by simplifying configurations, improving operations and management, and reducing process-change overheads. Never the less, it is a change from the current state of the Industrial Networks.
+
+ Adopting virtualized PLCs requires a clear understanding of several challenges from the network infrastructure's perspective for recognizing new types of virtual PLC devices. This section describes the challenges, starting with brief information on the current architecture to set the context.
+
+##  Overview of Industrial Network Architecture {#baseline}
+
+The physical network architecture for process control, as shown in {{indusarch}} is rigidly hierarchical. Note that the figure is over-simplified, and in general, each level will have additional hierarchies to extend the networks for scale. For example, a PLC controlling a group of Fieldbus devices may, in turn, be controlled by another PLC controller {{networked-PLC}} that runs ProfiNet protocol because both sets of devices are interdependent. For such cases, protocol translation gateways are required. Several network switches are needed to interconnect gateways and numerous devices on the factory floor.
+
+The hierarchical architecture comprises security-oriented zones known as ICA-95 model  (or Purdue model see {{Appendix}}) in which each zone contains well-defined levels. Among the three zones (Manufacturing, IDMZ, and Enterprise), the enterprise zone network is all IP, while the manufacturing and IDMZ network on the factory floor is a  combination of IP and Industrial protocols. The communication across the zone tends to get complex as each zone runs over different network technologies. A large number of IP-based firewalls and translation gateways are deployed in all the zones to control data movement between IT and OT networks.
+
+Industry control systems (SCADA, HMI, MES) perform complex operations. They collect data from devices and simultaneously administer several process control loop instances to handle complex processes. Traditional best practices indirectly required data delivery from L2 to L3 levels in reports, which caused a significant time lag.
 
 ~~~~ drawing
-          +-+-+-+-+-+-+
-       ^  | Data Apps |    External business logic network
+          +-+-+-+-+-+-+      External
+       ^  | Data Apps |      business logic network
        :  +-+-+-+-+-+-+        (L5)
-       :    ||     ||
-       v  +-+-+  +-+-+
-          |IDS|  |FW |     Translation gateways and firewalls
+       :    |      |
+       v  +-+-+  +-+-+     Translation
+          |IDS|..|FW |     gateways and firewalls
        ^  +-+-+  +-+-+ -----+  (L4)
        :     |              |
        v  +-+-+-+-+-+-+  +-+-+-+-+--+
-          | vendor A  |  |vendor B  |  Interconnection of
-          | controller|  |controller|  controllers
-       ^  +-+-+-+-+-+-+  +-+-+-+-+-+-      (L2-L3)
+          | vendor A  |  |vendor B  |  Interconnection
+          | controller|  |controller|  of controllers
+       ^  +-+-+-+-+-+-+  +-+-+-+-+-+-   (L2-L3)
        :       |         |
-       :   +-+-+-+-+  +-+-++-+
-       :   | Net X |  | Net Y|
-       v   | PLCs  |  | PLCs |--+      Device-controllers
-       ^   +-+-+-+-+  +-+-+--+  |       (L1)
-       :     |        |         |
-       :   +--+    +--+    +--+ |
-       v   |  |    |  |    |  | +   Field level devices
-           +--+    +--+    +--+     (L0)
-~~~~~
+       :   +-+-+-+-+    +-+-+-+-+
+       v   | PLCs-X |   |PLCs-Y |--+  Device-controllers
+       ^   +-+-+-+-+    +-+--+-+|      (L1)
+       :     |           |      |
+       :   +--+        +-+    +-+
+       v   |  |        | |    | |    Field level devices
+           +--+        +-+    +-+     (L0)
+~~~~
 {: #indusarch title="Hierarchy of Functions Industrial Control Networks"}
 
-I/O devices (sensors, actuators) generate a large volume of data and also accept process control commands. For an application to handle a variety of low-level protocol translations can be extremely challenging, therefore, solutions such as OPC-UA {{OPC_ARCH}} or common messaging broker mechanisms MQTT {{MQTT_SPEC}} are deployed. While OPC-UA is a common representation of data collected from different I/O devices; MQTT is messaging service designed for systems with low resources. Both  are higher-level protocols that are generally transmitted over TCP as shown in {{data-model}} below.
+## Associating virtualized PLCs with IO Devices
+A physical PLC is generally associated with a few I/O devices and is directly connected. The I/O modules are not required to authenticate or perform any verification on connection. A virtualized PLC is a software instance, it may now be anywhere in the network, therefore, the system must authenticate the virtualized PLC and I/O device connection pairing. This is necessary to maintain reliability and safety of the system and prevent unauthenticated PLC to interact with the software.
+
+## Expectations from the Networks {#expectations}
+
+The magnitude by which  compute capability is improved allows  a single virtualized controller to handle more complex and faster scan cycles. Then, the performance of the network to handle communication delays, packet formation, processing and forwarding overheads become critical to overall system performance. Additionally, to harness compute-power at lower cost use of edge-compute platforms is expected. Thus, the plant-floor networks are now extended to edge-networks expanding the security zones, creating 'new' requirements for multi-tenancy support (isolation and network segmentation) in OT networks. Note that in IT networks these technologies are mature and already standardized.
+
+## Multiprotocol Supporting PLCs
+
+A virtualized PLC can act as a single logical controller to communicate with a different group of I/O devices over one or more non-internet protocols such as Modbus, Profibus, CANbus, Profinet {{SURV}}, etc. Since each protocol specifies its packet format, different translation gateways are generally needed. Thus, a multi-protocol virtual PLC can reduce the number of gateways.
+
+However, the challenge is to provide a standard communication format for different I/O devices. Since it is not feasible to have a single flat Fieldbus Fieldbus protocol due to address scale limitations (limited address space up to 256 devices), an I/O interconnect is required to perform format translation. Then the packet on the wire should be multi-protocol aware. i.e., virtualized PLC needs to know what type of Fieldbus device it is communicating with at the other end.
+
+## Identification of virtualized PLC
+
+The fieldbus devices are serial buses and identify PLC as a device with a specific bus address.  In the large scale network and in the application layer this much information is insufficient. It may be required for virtualized PLC to support dual addresses, one exposed for the I/O module and other for IT applications.
+
+Moreover, as an exmaple, it is no longer sufficient to indicate basic address 0x14; it may require to specify 'device 0x14, of cell - C1 and factory floor, F1, PLC bus address 0x1 in communication path. The reachability to a specific I/O module should have complete information from virtualized PLC.
+
+{::comment}
+## Communication for Data Delivery
+I/O devices (sensors, actuators) generate a large volume of data and also accept process control commands. For an application to handle a variety of low-level protocol translations can be extremely challenging, therefore, solutions such as OPC-UA {{OPC_ARCH}} or common messaging broker mechanisms MQTT {{MQTT_SPEC}} are deployed. OPC-UA is a common representation of data collected from different I/O devices; MQTT is messaging service designed for systems with low resources. Both  are higher-level protocols that are generally transmitted over TCP as shown in {{data-model}} below.
 
 ~~~~~ drawing
          +--+      +--+          +---+
@@ -236,272 +336,67 @@ I/O devices (sensors, actuators) generate a large volume of data and also accept
 
 ~~~~~
 {: #data-model title="Protocol agnostic data collection in Industry Networks"}
-
-# Challenges and Limitations {#limitations}
-
-As is evident from the ICA-95 model (described in {{Appendix}}), the business applications are centralized in the enterprise networks. In this network architecture, with PLCs virtualized, they may be colocated at the edge of manufacturing zone, with the supervisory control systems, or in Enterprise zone along with business applications.
-
-Alternatively, virtualized PLCs enable new capabilities such as utilizing cloud to edge-aware network architectures by flexible placement of applications and allocation of resources to different components in industry control systems. Virtualzed PLCs serving from the edges can meet latency constraints to close the control loop for process automation.
-
-## Associating virtualized PLCs with I/O Devices
-
-A physical PLC is generally associated with a few I/O devices and is directly connected. The I/O modules are not required to authenticate or perform any verification on connection. As virtualized PLC may be on the other side of the network, the I/O device requires an authentication mechanism to connect to the PLC. This is necessary to maintain reliability and safety of the system and prevent unauthenticated PLC to interact with the software.
-
-## Expectations from network performance
-
-Virtualiaton allows consolidation of compute, storage, and network resources, as well as independence from custom hardware. The magnitude by which  compute capability is improved allows  a single virtualized controller to handle more complex and faster scan cycles.
-
-> Note: A scan cycle is generally the time taken to read the inputs, execute the program (e.g. ladder logic), and update the outputs.  The actual scan time is affected by the processing speed of the PLC, the size of the program, the type of instructions used in the program. Therefore, in virtualized PLCs general-purpose processor speed and the amount of memory available is much higher than most physical PLCs.
-
-Then, the performance of the network to handle communicaton delays, packet formation, processing and forwarding overheads become critical to overall system performance. Additionally, use of edge-compute platforms is expected  for both consolidating resource consumption and lowering the operational costs.
-
-## Multiprotocol supporting PLCs
-
-Another difference between physical and virtualized PLC is that with virtualization of PLC, a single controller can communicate with a different group of I/O devices over one or more non-internet protocols such as Modbus, Profibus, CANbus, Profinet {{SURV}}, etc. Each of the protocols specifies its packet format.
-
-The benefit is a reduction in the number of controllers, but the requirement challenge is to provide a standard communication format for different I/O devices. Since it is not feasible to communicate packets in native (Fieldbus protocol) format due to address scale limitations (field bus devices have limited address space up to 256 devices), a network element or an end-device is required to perform some format translation.
-
-As an example, a factory floor is composed of different cell sites. A set of PLCs controls I/O modules or machines in each cell. Traditionally, when there is an inter-connection requirement between two or more cells, the protocol translation is carried out between the cells. With physical PLC, the translation would be done at the controller, but with virtualized, it may require translation capability on the network element connecting to I/O devices or the devices themselves. Moreover, additional deployments are not integrated with the existing network, creating a new network.
-
-## Identification of virtualized PLC
-
-The fieldbus devices are serial buses and identify PLC as a device with a specific bus address.  In the large scale network and in the application layer this much information is insufficient. It may be required for virtualized PLC to support dual addresses, one exposed for the I/O module and other for IT applications.
-
-Moreover, as an exmaple, it is no longer sufficient to indicate basic address 0x14; it may require to specify 'device 0x14, of cell - C1 and factory floor, F1, PLC bus address 0x1 in communication path. The reachability to a specific I/O module should have complete information from virtualized PLC.
-
+{:/comment}
 ## Security Aspects {#sec-aspects}
-The fundamental paradigm of security as expressed in ICA-95 architecture changes with virtualized PLC since the PLCs are now moved away from the local manufacturing zone. The zone based security design considerations can employ either or both of the approaches:
+The fundamental paradigm of security as described in ICA-95 architecture changes with virtualized PLC since the PLCs are now moved away from the local manufacturing zone. The zone aware security will not apply.
 
-1. Describe mechanisms to abstract the manufacturing and other zones. This maybe achieved using secure communication channel approaches such as such as VPN, IPSEC etc. In this approach traffic admission policies applied on a PLC, will now be applied on traffic entering virtual PLC.
-2. Describe  mechanisms for location-specifc (site) perimeter security. This maybe achieved using conventional firewall methods.
+Instead, system will need a multi-dimensional security profiles. First one that encompasses both enterprise and manufacturing zones and second profile that are location specific - i.e. using secure channels such as such as VPN, IPSEC etc.
 
-When zone-based secuity rules are leveraged, location-specific security policies may be more coarse grained. For example, an ingress firewall rule will be required to verify and authenticate that the source site is permitted to send traffic for specified destination.
-
-
- {::comment}
-## Auto-scaling in Industry Control Networks
-
-In the industrial control system, infrastructure is tightly coupled to the physical environment, having large numbers of nodes connected through different network segments, integrated with diverse software technologies, and running on heterogeneous hardware platforms. This gets more complex every time new sensors or actuators are added on the factory floors and needed to expand the operations. When a new set of devices (sensors, controllers, etc.) are to be added, a general rule of thumb is to achieve this in a non-disruptive manner. As a result, a new network is created by adding new intermediate gateways for translations, switches, or routers, without any coordination. This naturally leads to overheads in device management and fragility in applications, since they need different set of interfaces, addresses, access control policies to access each network.
-
-##  Protocol Diversity
-The devices on factory floors (e.g. fieldbus devices) are controlled by PLCs often communication over a one or more  non-internet protocols such as Modbus, Profibus, CANbus, Profinet, etc {{SURV}}. There are more than 100 different protocols each with it's own packet format and are used  in the industry. When there is need to inter-connect two or more cells, corresponding translation of protocols need to be done from source and destination end points (device to controllers). Since the number of devices supported per fieldbus controller are limited (ranging from 32 to 256), the number of PLCs continue to grow as new sensor/actuators are deployed. Moreover, additional deployments are not integrated with existing network and a new network is created.
-
-## Communication between Enterprise and Factory
-
-There is another aspect of protocol conversion which is indirect. Instead of end-to-end connection, factory floor PDUs are transmitted as transport encapsulations in IP. This necessitates the need for firewalls to look beyond the IP header. Thus the overall manageability of networks is also complex, it is far more difficult to change device configuration than changing the traffic flowing through those devices.
-
-ISA-95 is poor match for automation as it lacks flexibility in integrating business services and process control. Yet any new proposal must preserve the characteristics of each zone. For example, manufacturing requires low-latency time bound operations; this includes PLCs.
-
-Enabling virtualization capabilities requires enhancement to existing could overcome these challenges. a converged industry architecture is required to overcome these challenges. The converged technology, seamlessly integrates the industrial and enterprise protocols.
-
-## Handling Large Scale Sensory Data
-
- Current data-collection approaches use the underlying network opaquely. This could pose challenges due to sensors generating large volume of data causing congestion on links across the network and thus  adversely impacting the performance due to decreased throughput, packet loss, and delay, Secondly, since the messaging protocols are over TCP/IP, currently there are no explicit priority of deterministic message delivery behavior to guarantee of low-latency data deliveries.
-{:/comment}
-
-# Evolving Networks for virtualized PLCs  {#evo-networks}
-
-This section conceptualizes a fully virtualized industrial control system in which  all the components - network, compute, storage, and applications run on virtual platforms to better understand the gaps and requirements.
-
-## Virtualization of Components in Industrial Systems
-
-Virtualization enables the separation of software from hardware. It is the foundation for disaggregating different system components such as operating systems, management tools, service logic, and data.
-
-In the case of industrial control systems, by virtualizing SCADA, MES, and HMI, etc. {{VPLC_CONV}}, these softwarized systems are run on commodity hardware or general-purpose CPUs.  Main benefit of virtualizing supervisory and control systems is that the overall cost can be controlled since specialized hardware is not required, while operators can perform software upgrades more frequently. Such virtualized software can be placed anywhere, often close to the source of data it needs to process. This, in turn, leads to leveraging edge compute networking for multi-site integration.
-
-While applications and services are beginning to get disaggregated, PLCs' virtualization is very early stage. Conceptually, a virtual PLC means that the controller functions are separated from the I/O modules of the devices.
-
-## Incremental Approaches
-Similar to SCADA, MES, HMIs, virtualized PLC may be located anywhere in industry control architecture. However, expanding beyond a factory cite, requires special  security considerations discuss in {{sec-aspects}}. Adding new virtualization capabilities may require and overall redesign of the network infrastructure which may not desirable in all the cases specifically, from the perspective of maintaining same level of security, reliability and safety requirements.
-
-Therefore, we envision that the following different approaches are possible:
-
-### Softwarized
-This is the basic approach with minimal change and minimal impact. A PLC software is virtualized and  runs on a commodity hardware supporting legacy interfaces to I/O modules. This type of change is isolated to a specific PLC functionality and the only benefit is use of commodity hardware. Potentially, there is a one to one replacement of physical to software PLC.
-
-### Localized
-In this approach PLC is virtualized and can run on a commodity hardware as above; additionally providing a clear separation between hardware and software components by relying on protocol translation gateways as part of the network edges that connect to I/O modules conceptually represented in {{localized-plc}}.
-
-~~~~~ drawing
-                    .-,,-.                     fieldbus
-      +-+        .-(      )-.     IP   _______   i/f
-      | |  ---->(  network   )------->[_______] ------> |==|
-      +-+        '-(      ).-'          I/O          I/O device
-   virtualized      '-.-'             gateway
-     PLC
-~~~~~
-{: #localized-plc title="virtualization of PLC and separation from  I/O devices"}
-
-
-Depending on the compute capabilities of the hardware, different instances of virtualized PLC may run simultaneously or a group of PLCs are bundled together in a single instance of virtualized PLC. Furthermore, a virtualized PLC maybe hosted on the same hardware along with SCADA or ICS components.
-
-There are two new concepts that will need to be formalized:
-- The I/O translation gateways are a new component in ICA architecture. These are interface translators on an edge network element devices that perform conversion of network side PDU to device side PDU.
-- identification of the virtualized PLC as discussed in {{identification-of-virtualized-plc}}.
-
- The incremental benefit beyond the use of commodity hardware is the ability of encapsulating complex logic in a single instance. A clean separation between PLC logic from I/O module allows changes to PLC logic and I/O devices independently. Since the location of virtualized PLC is with in manufacturing zone there is no impact on the security design.
-
-### Distributed
-This is the eventual goal to support virtualized PLC in a location independent manner. All benefits considered in {{localized}} apply with an advantage of leveraging third-party edge-compute infrastructure as a tenant.
-
-However, security zones are impacted as discussed in  {{sec-aspects}}.
-
-
-# Converged Architectural Concepts {#converged}
-
-Since a virtualized PLC now looks like an IT-centric software component with OT-specific capabilities, the industrial network framework should evolve accordingly to handle virtual entities in the network. This is  referred to as a converged network architecture and its conceptual model with significant functions, components and interfaces are discussed in this section.
-
-The foundational concepts of converged industry network architecture has three  design principles (i) Ability to virtualize end-points, (ii) Disaggregation of I/O Devices, and (iii) Converged industry-network fabric to support communication between virtualized endpoints and I/O modules.
-
-## Overview
-
-{{convarch}} represents a converged network fabric (bottom-left) that enables the transfer of data between software system components (top-left) and the physical devices (bottom-right). The fabric is a shared network infrastructure that allows all the characteristics required in the industrial control networks, such as deterministic, low-latency, and real-time communications.
-
-In {{convarch}}, "B. factory site" represents one or more cell (locations) of the physical devices. Each cell group belongs to one physical site, and there can be multiple such sites. A cell site may be the smallest network in this fabric.
-
-"A. Software components" emulate different OT and IT functions hosted in a cloud-like environment which is distributed, i.e., components may be located at various sites or at the edge to support low-latency, deterministic applications. Both field and software components are connected over a converged network (shown as "C. <network"> in {{convarch}}), which presents a unified view of the network infrastructure interconnecting software and field components.
-
-The converged fabric is composed of 3 types of network elements with specific roles.
-
-{: vspace="0"}
-CISN (Converged Industry Service Node):
-: The application or service nodes that get virtualized and softwarized maybe instantiated anywhere in the Industry network independent of the I/O module placement. They are placed in cloud or at the edge or the factory floor itself depending on the usage and type of application. From the communication perspective, these nodes following the state of the art in IT could use technologies and protocol such as IPv6 addresses {{!RFC8200}}, and service chains {{!RFC8300}} for steering between  different service nodes. Their interface to network will have specific transport requirements (when not transmitted as overlay).
-
-CIFR (Converged Industry Fabric Router):
-: Network nodes that form the converged fabric and understand  the traffic flows between  I/O modules and applications. CIFRs are all expected to run a uniform suite of protocols. In a much simplified view the fabric maybe a core IPv4 or IPv6 based forwarding plane, regardless whether overlay technologies (such as VPN, VxLAN etc.) are used). Potentially  interconnected over different physical media technologies (commodity or TSN) Ethernet.
-: CIFRs also perform functions for WAN interfaces and multi site interconnections. The routers performing this function will be at the upper edge of the physical network.
-
-{::comment}
-: One aspect of converged fabric is unified understanding or structure of the packets flowing through it. It leads to requirements mentioned in {{gen_req}}.
-{:/comment}
-
-
-CIIG (Converged I/O-Gateways)
-: These gateways are the lower-level edges of the converged fabric.They are very similar to the existing PLC gateways that are purpose-built for translation between fieldbus/fieldbus or fieldbus/IT protocols. In contrast to traditional gateways CIIGs could be stateless and optionally provide more secure control to I/O device.
-
-## Component Virtualization
-
-In the existing deployments, components such as HMI, Historian, MES, and SCADA systems run on dedicated hardware. Virtualizing these system components can be consolidated on a single general-purpose hardware platform, reducing the number of hardware devices and improving the security of data exchanges among these systems.
-
-### Virtualized PLC
-
-A virtualized PLC decouples controller logic from the I/O component. It allows  integration of supervisory and control software components as part of the execution environment by leveraging mature IP-based technologies.
-
-Although an exploratory work {{VPLC_CONV}} and {{VPLC_IIC}} propose I/O field-buses to be replaced with the high-speed, deterministic media (such as Ethernet). The legacy systems (such as serial fieldbus interfaces) will continue to exist in the foreseeable future. Thus, the architecture must support the communication between the field-bus I/O and PLCs, even when the PLCs are virtualized. This implies that in some cases the fabric will still need protocol translation gateways on cell sites, but they need to be close to the the I/O modules i.e. at the edge of the converged fabric.
-
-### Application and Services
-
-Component virtualization enables co-location of different service functions on the same hypervisor or entirely at a different location regardless of what security zone they belong to. The constraints aware path chain can be set using {{!RFC7665}}. Moreover, it provides multiple service function chain to support different applications. This type of architecture along with NFV {{ETSI_GS_NFV_003}} can be extremely resource efficient.
-
-Several sensors emit time-series data, that can add to the bandwidth consumption to the information going to the cloud. Deploying big-data application closer on the edge and scale them on-demand provides a sophisticated tool to disaggregate  processing of sensory data and summarize for the cloud-enterprise applications.
-
-
-~~~~ drawing
-   .................................................................
-  .             A. <CIN - software components>                     .
-   .        +----------------------+                               .
-   .        |  Application Nodes   |                               .
-   .      +-+--------------------+ |                               .
-   .      |   SCADA/MES Nodes    | |                               .
-   .    +-+--------------------+ | |                               .
-   .    |  virtual PLCs        | | |                               .
-   .    |    +-+ +-+  +-+ +-+  | | |                               .
-   .    |    |N| |2|  |1| |0|  | | |                               .
-   .    |    +-+ +-+  +-+ +-+  | | |                               .
-   .    |   +----------------+ | | |                               .
-   .    |   |  O/S Layer     | | | |                               .
-   .    |   +----------------+ | | |         B.  <factory site>    .
-   .    |   |  |RT hyperV    | | - +      +----------------------+ .
-   .    |   +----|-|--|------+ |-+        |  Cell   Group N      | .
-   .    +--------|-|--|--------+        +-+--------------------+ | .
-   .             | |  |                 |   Cell   Group 2     | | .
-   .             | |  |               +-+--------------------+ | | .
-   .             v v  v               |   Cell Group 1       | | | .
-   .     +----------------------+     | | Fieldbus Devices|  | | | .
-   .     | CIG-Router    1      |<-x->| +(@)-(@)-(@)-(@)--+  | | | .
-   .    +-+--------v--|-------+ |     |   |   |   |   |      | | | .
-   .    | CIF- Router   X     | |     | +----------------+   | |-+ .
-   .  +-+-------------v-----+ |<--yy->| | I/O Modules    |   | |   .
-   .  | CIF-Router      1   | | |     | +----------------+   |-+   .
-   .  | +-----------------+ |<---zz-->|                      |     .
-   .  | |C o n v e r g e d| | |_+     + ---------------------+     .
-   .  | |  F a b r i c    | |_+                                    .
-   .  | +-----------------+ |                                      .
-   .  +---------------------+                                      .
-   .      C. <network>                                            .
-   .................................................................
-~~~~~
-{: #convarch title="Converged Industrial Network Architecture"}
-
-## I/O Modules and Field Components
-
-A manufacturing facility can be located at more than one site and each site is further divided into cells. Further the machinery, actuators, sensors are associated with the cell connected to the PLCs. These controllers run different protocols such as Ethernet, RT-Ethernet, Modbus, ProfiNet etc.
-
-In a vPLC supported environment, the I/O cards are responsible for media access conversion from in and out of the converged fabric. Even the support for legacy PLCs is similar to vPLCs, with the role reduced to only translation function.
-
-## Converged Fabric
-
-Converged fabric shown as "B." in {{convarch}} is central to the architecture. The connectivity is largely Ethernet based (except I/O device interfaces), potentially running IP protocols on the switches and routers in the network.
-
-Since this is a logical fabric, the connectivity is local on a factory floor and can be extended to multiple sites. Interconnecting different sites will use WAN  functions. The fabric breaks the hierarchical structure and topology can now be designed as fat-tree (or leaf-spine) network which provides overall more number and multiple deterministic paths between two end points.
-
-A key characteristic of legacy Industry networks is that they do not require frequent changes and therefore, topology changes are not dynamic. The fabric could potentially use a combination of software-defined connectivity with IP routing protocols. The routing protocols will maintain the infrastructure reachability among the network nodes and software-defined solutions will manage flow of traffic in a deterministic manner addressing the low-latency and deterministic data delivery of certain type of flows.
-
-
-# Requirements {#reqs}
-
-## General Requirements {#gen_req}
-
-- Basic requirement for converged fabric is  the efficiency of connections between the IT software and floor I/O modules or modules, i.e. the connection to a low-level factory devices is uniform (or homogenized) manner. Uniformity implies a variety of endpoints interconnect in an identical fashion without requiring device specific translations. Efficient connections lead to less processing or states in the network with improved resiliency and performance.  There maybe opportunities to design packet formats with minimal overheads by using in-band programmability paradigms that carry embedded metadata and control information relating to reachability, latency, jitter, reliability, and exceptions characteristics. This type of approach is expected to reduce configurations and number of policies required for data steering through the network. Existing methods that maybe used, evaluated or extended include IP with TSN, DETNET{{DETNET}}, reachability headers SCHC, IPv6 compression schemes or may be evaluated against newer schemes.
-
-- The converged-fabric shall support traffic segmentation. As connections change between the devices, it should not have adverse effect on deterministic, low latency behavior on the other segmented traffic. Each segmented traffic may be associated with a different protocol or traffic profile including legacy traffic format and profiles. In case the fabric supports legacy traffic flow or devices, its performance should be no worse than before the fabric. The methods to support segmentation include virtual network technologies inside the fabric such as VxLAN, VPNs, etc.
-
-- The fabric protocols used must not limit to a constrained physical topology. It should support efficient multi-path distributed connectivity framework to prevent bottlenecks, traffic concentration. Even in the industrial networks growth in data-generation is obvious as more number of telemetry and reporting sensors are being added in the system. Managing bandwidth for different types of data (operational, control, statistics) should be considered.
-It is expected that an entire cell may be added or removed on-demand. This type of changes shall be dynamic (i.e. does not require long-term planning) and non disruptive (no impact on existing performance metrics) to other traffic-paths in the network. These characteristics scale better with layer-3 network designs.
-
-- The fabric is a logical representation of LAN and WAN connections. The traffic ICA-95 zone-transfer may happen anywhere in the logical topology. In this regard, appropriate perimeter or zone admission policies MUST be designed and enforced in such a manner that are not bound to a specific location. Alternately, it may require two-stage policies first one to validate traffic conforms to the zone policies and second conforming to specific service behavior. A potential approach here could be the use of semantic addressing {{?I-D.draft-farrel-irtf-introduction-to-semantic-routing}} where part of the addresses may describe match rules for zones and services.
-
-## Device Specific Requirements
-
-Device functions and operation does not change. The requirements here are related to how that are reached, identified and discovered in the network.
-
--  Addresses scope: As the scale of industry network grows, there will be many same type of devices with limited address space (a fieldbus or ModBus address limits up to 256) all across the floor. Therefore, a structured addressing scheme is necessary to uniquely identify each device from the operator's command center.
-
--  Converged Namespace: Each industry vertical could have different preferences for how it chooses to  view devices and applications in the system. It should be possible to identify all the endpoints as part of a system defined namespace. The solution should not require different operations and management schemes for industry I/O modules vs IT applications. A common namespace that aligns with business goals can simplify management. For example, assigning segmented identifiers for each level (PLCs, cell sites, type of application etc.) and concatenating them together provides helps industry operations considering that factory devices do not change their location often in the topology.
-
--  Network Identifiers: Each device should be identifiable in the network by what application it can talk to. The network identification should be provided for setting up security or firewall policies. Note: today legacy devices do not have network identifiers. With virtual instances of PLCs, it is to be determined how different instances of the same PLC will be identified, discovered and associated. Moreover, it maybe desirable to support variable length identifiers to handle both IT servers and I/O module type devices.
-
-- Legacy support: Architecture must provide legacy device support for deployed protocol formats and their core capabilities. This is needed to maintain  non-disruptive operations.
-
-- Once part of the larger fabric, the devices must be discoverable. Given the 'physical-location' of the device can often be preprogrammed, device on-boarding should allow a device to be auto-configurable.
-
-- The auto configuration procedures should be efficient, i.e., comparable to the processing capabilities of the I/O devices.
-- On-boarding procedures (manual or automatic) must have built-in or well-defined authentication procedures.
-
-- Device policies: Each device  connects to at least  one controller (PLC or a gateway). When the network detects a misbehaving controller, the policies should define the default behavior of the device (such as quarantined from the network along with the gateway or allow it to operate autonomously with default settings, or shutdown etc).
-
-Further motivation and analysis for adapting to OT/IT asymmetric address formats is covered in {{?I-D.draft-km-industrial-internet-requirements}}.
-
-## Key Performance Indicator Requirements
-
-- Performance of industry operations depend on the deterministic behavior of devices. The network must preserve and support this attribute such as the legacy device connections with controllers.
-
-- Safety mechanisms : To keep a factory floor hazard and accident free environment, the system should implement built-in mechanisms for proper operation of a devices (i.e. software commands sent from vPLC must not exceed thresholds).
-
-- Security: mechanisms should be implemented to protect man-in-the-middle attack. Knowing that E2E encryption procedures on device can impact low-latency, due to low processing power, light-weight mechanisms should be devised (such as reduce the data to be encrypted, account it in KPIs, etc).
-
-## Virtualization Related Requirements
-
-The topologies in the manufacturing zones do not change frequently and devices are  designated in a zone or a cell for long-term use. Such observations can help simplify network designs. As such, industry networks substantially benefit from a hybrid approach of software-defined networking and distributed routing. Former for initial provisioning, latter for reachability and health of the fabric. Such hybrid approaches eliminates the need for complex  routing protocol features.
-
-- Edge compute and networking - TBD.
+# Requirements {#req}
 
 ## Virtualized PLC Requirements
 
-- Solution must provide a secure method of pairing, authenticating a virtualized PLCs with their I/O devices.
-- Virtualization allows multiple PLCs to control the same device. This can potentially lead to conflicts in device operation. Therefore, careful policies are required to prioritize operation across the PLCs.
-- Currently, L0 and L1 devices (ICA_95) do not use any transport protocol. The data is embedded after control header. With a network layer solution, TCP maybe too heavy for field-bus devices. Some other means of assuring device delivery will be needed.
+Having virtualized, a PLC's function and operation do not change. These requirements are related to how that are reached, identified and discovered in the network.
 
+-  Addresses scope:
+ A uniquely reachable address for all the fieldbus I/O devices, and PLCs is required such that intermediate network elements know how to route (or switch) to those addresses.  As such there is is no need to enforce IP addresses for fieldbus devices since they are constrained devices and IP may not be the most suitable address structure. Moreover, as the scale of industry network grows, there will be many 'same' type of devices with limited address space (a fieldbus or ModBus address limits up to 256) all across the floor. It is expected the virtualized PLC would be an IP addressed endpoint when communicating with higher level applications, but southbound communication may require some kind of a structured addressing scheme to reach fieldbus device in the network (e.g. see {{semantic-addressing}}{{asymmetric-addr}}). It maybe desirable to support variable length identifiers to handle both IT servers and I/O module type devices.
+
+-  Converged Namespace:
+ Addresses are derived from namespaces. It should be possible to associate all the endpoints (OT and IT) as part of their system defined namespace. The solution should not require different operations and management schemes for industry I/O modules vs IT applications. It will improve the security by verifying an endpoint against a namespace. However, each industry vertical should be able to choose its own namespace. For example, In some cases, classification may be based on a level (PLCs, cell sites, type of application etc.) and corresponding address is derived by concatenating them together since factory devices do not change their location often in the topology. The devices must be discoverable. Given the 'physical-location' of the device can often be preprogrammed, device on-boarding should allow a device to be auto-configurable.
+
+-  Network Identifiers:
+Virtualized PLC should be identifiable by what application it can talk to or the service they are part of {{semantic-addressing}}. The network identification is required for setting up security or firewall policies. Note: legacy devices do not have network identifiers and deeper packet inspection will be needed to identify a specific PLC. Alternately  {{semantic-addressing}} maybe useful in structuring the identifiers.
+
+- Legacy support:
+virtualized PLCs and legacy PLCs must co-exist with support for deployed protocol formats and their core capabilities. This is needed to maintain  non-disruptive operations.
+
+- Auto configuration:
+procedures should be efficient, i.e., comparable to the processing capabilities of the I/O devices. On-boarding procedures (manual or automatic) must have built-in or well-defined authentication.
+
+- Controller and Fieldbus Pairing:
+virtualized PLCs must support secure method of pairing, authenticating with their I/O devices. Virtualization allows multiple PLCs to control (or at least monitor) the same device. This can potentially lead to conflicts in device operation. Therefore, careful access control mechanisms are required to prioritize operation across the PLCs.
+
+- Efficient Transport Protocol
+Currently, factory-floor fieldbus devices do not directly use any transport protocols designed for the purpose, e.g., {{MQTT_SPEC}} and {{OPC_ARCH}}. The data collected from sensors is encapsulated in TCP. Alternate native transport based on principles of {{MQTT_SPEC}} could help to improve the traffic efficiency in industrial networks.
+
+## Key Performance Indicator Requirements
+
+- Process Control:
+performance depends on the deterministic behavior of devices. A virtualized PLC must maintain all deterministic and low latency attributes of physical PLC.
+
+- Safety mechanisms:
+To keep a factory floor hazard and accident free environment, the virtualized PLC must implement mechanisms for proper operation of a devices which includes commands sent from vPLC must not exceed thresholds, are error-free and valid for the fieldbus operation.
+
+- Security:
+mechanisms should be implemented to protect man-in-the-middle attack. Encryption overheads must be budgeted from virtualized PLC to fieldbus to maintain process control latency. Due to low processing power, light-weight mechanisms should be devised.
+
+## Network Related Requirements
+
+The topologies in the manufacturing zones do not change frequently and devices are  designated in a zone or a cell for long-term use. Such observations can help simplify network designs. Industry networks could substantially benefit from a hybrid approach of software-defined networking and distributed routing. Former for initial provisioning (or controlled bootstrapping), latter for reachability and health of the fabric. Such hybrid approaches eliminate the need for implementing complex routing protocol features.
+
+- Backward Compatibility:
+seamless integration of virtualized PLCs must be supported. The network must supports legacy traffic and its performance should be no worse than before the inclusion of virtualized PLCs.
+
+- Efficiency of connections:
+industrial networks have different types of connection endpoints, such as PLC-PLC, PLC-SCADA, SCADA-IT-Systems, PLC-Firewalls, PLC-gateways, PLC-I/O modules. Without subscribing to a specific wire-format, a flexible packet format should be designed to address smooth connections between any of the above endpoints.  It implies a variety of endpoints interconnect in an identical fashion without requiring device specific translations. Efficient connections lead to less processing or states in the network with improved resiliency and performance.  There maybe opportunities to design packet formats with minimal overheads by using in-band programmability paradigms that carry embedded metadata and control information relating to reachability, latency, jitter, reliability, and exceptions characteristics. This type of approach is expected to reduce configurations and number of policies required for data steering through the network. Existing methods that maybe used, evaluated or extended include IP with TSN, DETNET{{DETNET}}, reachability headers SCHC, IPv6 compression schemes or may be evaluated against newer schemes.
+
+- Traffic segmentation support:
+As virtualized PLCs are spun off like VMs, connectivity with fieldbus devices will be affected. It should not have adverse effect on deterministic, low latency behavior on the other segmented traffic (i.e. connectivity between other set of endpoints). Each segmented traffic may be associated with a different protocol or traffic profile including legacy traffic format and profiles. The methods to support segmentation include virtual network technologies inside the fabric such as VxLAN, VPNs, etc.
+
+- Resilient and Extensible Topologies:
+The industry network protocols must not limit to a constrained physical topology. It must support  multi-path distributed connectivity framework to prevent bottlenecks, traffic concentration.
+- Dynamic Bandwidth Management:
+Even in the industrial networks high volume of data is being generated from the sensors. Managing bandwidth for different types of data (operational, control, statistics) should be supported through existing QoS or in-band monitoring technologies.
 
 
 # IANA Considerations
